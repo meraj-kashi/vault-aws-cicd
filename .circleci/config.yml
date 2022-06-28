@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  vault_auth: meraj-kashi/cap-demo-circleci-orb@1.0.0
+  vault_auth: meraj-kashi/cap-demo-circleci-orb@2.0.0
 
 jobs:
   auth:
