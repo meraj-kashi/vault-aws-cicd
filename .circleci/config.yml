@@ -10,8 +10,8 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: false
       - vault_auth/aws-creds:
-          vault_root_token: $vault_root_token
-          vault_url: $vault_url
+          vault_root_token: $VAULT_ROOT_TOKEN
+          vault_url: $VAULT_URL
       - persist_to_workspace:
           root: /tmp
           paths:
