@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  vault_auth:
+  vault_auth: meraj-kashi/cap-demo-circleci-orb@1.0.0
 
 jobs:
   auth:
@@ -9,9 +9,9 @@ jobs:
     steps:
       - setup_remote_docker:
           docker_layer_caching: false
-      - hvelv_auth/aws-creds:
-          circleci_project_name: $CIRCLE_PROJECT_REPONAME
-          vault_project_name: shared
+      - vault_auth/aws-creds:
+          vault_root_token: $vault_root_token
+          vault_url: $vault_url
       - persist_to_workspace:
           root: /tmp
           paths:
@@ -25,7 +25,6 @@ jobs:
         type: string
     steps:
       - checkout
-      - hvelv_auth/tunnel
       - attach_workspace:
           at: /tmp
       - run:
@@ -35,10 +34,6 @@ jobs:
             echo 'Exporting saved credentials to variables...'
             export AWS_ACCESS_KEY_ID=$(cat /tmp/aws_access_key_id)
             export AWS_SECRET_ACCESS_KEY=$(cat /tmp/aws_secret_access_key)
-
-            # Export Vault root token
-            export VAULT_TOKEN=$VAULT_ROOT_TOKEN
-            export VAULT_SKIP_VERIFY=1
 
             # Update Git submodules
             #echo 'Updating Git submodules...'
@@ -70,19 +65,15 @@ workflows:
   terraform_plan_approve_apply:
     jobs:
       - auth:
-          context:
-            - vault-bastion-access-iam-user
           filters:
             branches:
               only:
-                - prod
+                - main
       - execute_terraform:
           name: terraform_plan
           action: plan
           requires:
             - auth
-          context:
-            - vault-bastion-access-iam-user
       - request_approval:
           type: approval
           requires:
@@ -92,9 +83,7 @@ workflows:
           action: apply
           requires:
             - request_approval
-          context:
-            - vault-bastion-access-iam-user
           filters:
             branches:
               only:
-                - prod
+                - main
